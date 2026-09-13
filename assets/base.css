@@ -1,0 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700;800&family=Barlow+Condensed:wght@500;600;700&display=swap');
+
+:root{
+  --vino:#6e1f33;
+  --vino-claro:#a03652;
+  --oro:#d4a04a;
+  --oro-claro:#e8c684;
+  --tinta:#0c0a0f;
+  --tinta-2:#171320;
+  --lino:#e6dccb;
+  --lino-tenue:#b9ae9c;
+  --verde:#3f7d6a;
+  --azul:#3c5a86;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+  font-family:'Barlow',system-ui,sans-serif;
+  background:var(--tinta);
+  color:var(--lino);
+  -webkit-font-smoothing:antialiased;
+}
+
+.lienzo{
+  position:relative;
+  overflow:hidden;
+  background:
+    radial-gradient(1200px 700px at 78% -8%, rgba(110,31,51,.55), transparent 62%),
+    radial-gradient(900px 600px at 8% 108%, rgba(212,160,74,.16), transparent 60%),
+    var(--tinta);
+}
+
+/* filete de oro superior */
+.filete{
+  position:absolute; left:0; right:0; top:0; height:5px;
+  background:linear-gradient(90deg,var(--vino),var(--oro) 45%,var(--oro-claro) 55%,var(--vino));
+}
+
+.rayos{position:absolute;inset:0;opacity:.28;pointer-events:none}
+
+h1{
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700; letter-spacing:.4px; line-height:1.02;
+  color:#fff;
+}
+.kicker{
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:600; letter-spacing:3.4px; text-transform:uppercase;
+  color:var(--oro); font-size:19px;
+}
+.sub{color:var(--lino-tenue);font-weight:300}
+
+.tarjeta{
+  background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.018));
+  border:1px solid rgba(212,160,74,.26);
+  border-radius:16px;
+  padding:26px 28px;
+  backdrop-filter:blur(2px);
+}
+.tarjeta h3{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:27px;font-weight:700;color:var(--oro-claro);
+  letter-spacing:.6px;margin-bottom:10px;
+}
+.tarjeta p{font-size:18px;line-height:1.52;color:var(--lino);font-weight:300}
+
+.pie{
+  border-top:1px solid rgba(212,160,74,.24);
+  color:var(--lino-tenue);font-size:15px;font-weight:300;line-height:1.5;
+}
+.pie b{color:var(--oro);font-weight:600}
+em{color:var(--oro-claro);font-style:normal;font-weight:600}
