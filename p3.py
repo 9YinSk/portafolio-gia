@@ -121,7 +121,7 @@ document.getElementById("chart").innerHTML = Object.keys(NOM).map(function(k){
 var cv=document.getElementById("g"), cx=cv.getContext("2d"), W=0,H=0,dpr=1;
 function medir(){ dpr=Math.min(window.devicePixelRatio||1,2); var r=cv.getBoundingClientRect();
   W=r.width; H=r.height; cv.width=W*dpr; cv.height=H*dpr; cx.setTransform(dpr,0,0,dpr,0,0); }
-medir(); window.addEventListener("resize",function(){medir();});
+medir(); window.addEventListener("resize",medir);
 
 N.forEach(function(n,i){ var a=i/N.length*Math.PI*2; n.x=W/2+Math.cos(a)*Math.min(W,H)*0.32;
   n.y=H/2+Math.sin(a)*Math.min(W,H)*0.32; n.vx=0; n.vy=0; n.r=5+Math.min(n.deg,8)*1.05; });
@@ -142,7 +142,7 @@ function paso(){
     a.vx*=0.86; a.vy*=0.86;
     a.x+=Math.max(-6,Math.min(6,a.vx*alfa)); a.y+=Math.max(-6,Math.min(6,a.vy*alfa));
     a.x=Math.max(a.r+58,Math.min(W-a.r-58,a.x)); a.y=Math.max(a.r+14,Math.min(H-a.r-14,a.y)); }
-  if(alfa>0.22) alfa*=0.995;
+  alfa*=0.982;
 }
 function vecino(i){ return sobre===null || sobre===i || (adj[sobre]&&adj[sobre][i]); }
 function pintar(){
@@ -167,21 +167,30 @@ function pintar(){
     cx.globalAlpha=1;
   });
 }
-function bucle(){ paso(); pintar(); requestAnimationFrame(bucle); }
-bucle();
+var vivo=false, extra=0;
+function despertar(n){ extra=Math.max(extra, n||24); if(!vivo){ vivo=true; requestAnimationFrame(bucle); } }
+function bucle(){
+  var mover = alfa>0.05 || arrastra;
+  if(mover) paso();
+  pintar();
+  if(extra>0) extra--;
+  if(mover || extra>0) requestAnimationFrame(bucle); else vivo=false;
+}
+despertar(0);
+window.addEventListener("resize",function(){ despertar(60); });
 
 function pos(ev){ var r=cv.getBoundingClientRect();
   var p = ev.touches? ev.touches[0] : ev; return {x:p.clientX-r.left, y:p.clientY-r.top}; }
 function buscar(p){ for(var i=0;i<N.length;i++){ var dx=N[i].x-p.x, dy=N[i].y-p.y;
   if(dx*dx+dy*dy < (N[i].r+9)*(N[i].r+9)) return i; } return null; }
 cv.addEventListener("mousemove",function(e){ var p=pos(e);
-  if(arrastra){ arrastra.x=p.x; arrastra.y=p.y; alfa=Math.max(alfa,0.6); return; }
-  var i=buscar(p); if(i!==sobre){ sobre=i; cv.style.cursor=i===null?"grab":"pointer"; } });
-cv.addEventListener("mouseleave",function(){ sobre=null; arrastra=null; });
-cv.addEventListener("mousedown",function(e){ var i=buscar(pos(e)); if(i!==null){ arrastra=N[i]; cv.style.cursor="grabbing"; } });
+  if(arrastra){ arrastra.x=p.x; arrastra.y=p.y; alfa=Math.max(alfa,0.6); despertar(6); return; }
+  var i=buscar(p); if(i!==sobre){ sobre=i; cv.style.cursor=i===null?"grab":"pointer"; despertar(2); } });
+cv.addEventListener("mouseleave",function(){ sobre=null; arrastra=null; despertar(2); });
+cv.addEventListener("mousedown",function(e){ var i=buscar(pos(e)); if(i!==null){ arrastra=N[i]; cv.style.cursor="grabbing"; despertar(30); } });
 window.addEventListener("mouseup",function(){ arrastra=null; cv.style.cursor="grab"; });
-cv.addEventListener("touchstart",function(e){ var p=pos(e); var i=buscar(p); if(i!==null){ arrastra=N[i]; sobre=i; e.preventDefault(); } },{passive:false});
-cv.addEventListener("touchmove",function(e){ if(arrastra){ var p=pos(e); arrastra.x=p.x; arrastra.y=p.y; alfa=Math.max(alfa,0.6); e.preventDefault(); } },{passive:false});
+cv.addEventListener("touchstart",function(e){ var p=pos(e); var i=buscar(p); if(i!==null){ arrastra=N[i]; sobre=i; despertar(30); e.preventDefault(); } },{passive:false});
+cv.addEventListener("touchmove",function(e){ if(arrastra){ var p=pos(e); arrastra.x=p.x; arrastra.y=p.y; alfa=Math.max(alfa,0.6); despertar(6); e.preventDefault(); } },{passive:false});
 cv.addEventListener("touchend",function(){ arrastra=null; });
 })();
 </script>"""
