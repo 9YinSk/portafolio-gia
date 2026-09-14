@@ -296,8 +296,8 @@ function medir(){ dpr=Math.min(window.devicePixelRatio||1,2); var r=cv.getBoundi
   W=r.width; H=r.height; cv.width=W*dpr; cv.height=H*dpr; cx.setTransform(dpr,0,0,dpr,0,0); }
 medir(); window.addEventListener("resize",medir);
 
-var MX=104, MY=26;
-var k = Math.sqrt(Math.max(W*H,1)/N.length)*0.82, temp = W/7;
+var MX=86, MY=26;
+var k = Math.sqrt(Math.max(W*H,1)/N.length)*1.0, temp = W/6;
 N.forEach(function(n,i){
   var a=i*2.39996, rr=Math.sqrt((i+0.6)/N.length)*Math.min(W-2*MX,H-2*MY)*0.48;
   n.x=W/2+Math.cos(a)*rr; n.y=H/2+Math.sin(a)*rr; n.fx=0; n.fy=0;
@@ -325,20 +325,19 @@ function paso(){
     d=Math.sqrt(a.fx*a.fx+a.fy*a.fy)||1;
     var m=Math.min(d,temp);
     a.x+=a.fx/d*m; a.y+=a.fy/d*m;
-    a.x+=(W/2-a.x)*0.012; a.y+=(H/2-a.y)*0.016;
+    a.x+=(W/2-a.x)*0.009; a.y+=(H/2-a.y)*0.013;
     a.x=Math.max(MX,Math.min(W-MX,a.x));
     a.y=Math.max(MY+a.r,Math.min(H-MY*0.5-a.r,a.y));
   }
   temp*=0.974;
 }
-function etiqueta(n,i,activo){
+function etiqueta(n,i,activo,x,y){
   cx.font=(activo?"600 ":"400 ")+"12.5px Barlow, system-ui, sans-serif";
-  cx.textAlign="center"; cx.textBaseline="alphabetic";
-  var y=n.y-n.r-7;
+  cx.textAlign="left"; cx.textBaseline="alphabetic";
   cx.lineWidth=3.2; cx.strokeStyle="rgba(8,6,11,.92)"; cx.lineJoin="round";
-  cx.strokeText(n.l,n.x,y);
+  cx.strokeText(n.l,x,y);
   cx.fillStyle=activo?"#ffffff":"rgba(230,220,203,.86)";
-  cx.fillText(n.l,n.x,y);
+  cx.fillText(n.l,x,y);
 }
 var orden = N.map(function(_,i){return i;}).sort(function(a,b){return N[b].deg-N[a].deg;});
 function vecino(i){ return sobre===null || sobre===i || (adj[sobre]&&adj[sobre][i]); }
@@ -363,13 +362,14 @@ function pintar(){
     var n=N[i], act=(i===sobre);
     if(sobre!==null && !vecino(i)) return;
     cx.font=(act?"600 ":"400 ")+"12.5px Barlow, system-ui, sans-serif";
-    var w=cx.measureText(n.l).width, x=n.x-w/2, y=n.y-n.r-7;
-    var c={x0:x-4,y0:y-13,x1:x+w+4,y1:y+4};
+    var w=cx.measureText(n.l).width;
+    var x=Math.max(5,Math.min(W-w-5, n.x-w/2)), y=n.y-n.r-7;
+    var c={x0:x-6,y0:y-15,x1:x+w+6,y1:y+7};
     var choca=false;
     for(var j=0;j<cajas.length;j++){ var o=cajas[j];
       if(!(c.x1<o.x0||c.x0>o.x1||c.y1<o.y0||c.y0>o.y1)){ choca=true; break; } }
     if(choca && !act) return;
-    cajas.push(c); etiqueta(n,i,act);
+    cajas.push(c); etiqueta(n,i,act,x,y);
   });
 }
 var vivo=false, extra=0;
