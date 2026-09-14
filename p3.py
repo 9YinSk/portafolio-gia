@@ -18,7 +18,7 @@ GRAFO = """
     <div class="kicker" style="margin:0">Grafo de conocimiento de este portafolio</div>
     <div class="small tenue" id="g-stats" style="font-size:13.5px">cargando&hellip;</div>
   </div>
-  <canvas id="g" style="width:100%;height:560px;display:block;border-radius:10px;background:radial-gradient(600px 380px at 60% 20%,rgba(110,31,51,.30),transparent 65%),#0a080d;cursor:grab;touch-action:none"></canvas>
+  <canvas id="g" style="width:100%;height:600px;display:block;border-radius:10px;background:radial-gradient(600px 380px at 60% 20%,rgba(110,31,51,.30),transparent 65%),#0a080d;cursor:grab;touch-action:none"></canvas>
   <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;align-items:center">
     <span class="small tenue" style="font-size:13px">Pasa el cursor por un nodo para aislar sus relaciones &middot; arr&aacute;stralo para moverlo</span>
     <span style="flex:1"></span>
@@ -167,23 +167,36 @@ function etiqueta(n,i,activo){
   cx.fillStyle=activo?"#ffffff":"rgba(230,220,203,.86)";
   cx.fillText(n.l,n.x,y);
 }
+var orden = N.map(function(_,i){return i;}).sort(function(a,b){return N[b].deg-N[a].deg;});
 function vecino(i){ return sobre===null || sobre===i || (adj[sobre]&&adj[sobre][i]); }
 function pintar(){
   cx.clearRect(0,0,W,H);
   links.forEach(function(l){
     var on = sobre===null || l.s===sobre || l.t===sobre;
-    cx.strokeStyle = on ? "rgba(212,160,74,.50)" : "rgba(212,160,74,.10)";
+    cx.strokeStyle = on ? "rgba(212,160,74,.50)" : "rgba(212,160,74,.09)";
     cx.lineWidth = on?1.3:0.7; cx.beginPath();
     cx.moveTo(N[l.s].x,N[l.s].y); cx.lineTo(N[l.t].x,N[l.t].y); cx.stroke();
   });
   N.forEach(function(n,i){
-    var on=vecino(i);
-    cx.globalAlpha = on?1:0.22;
+    cx.globalAlpha = vecino(i)?1:0.20;
     cx.beginPath(); cx.arc(n.x,n.y,n.r,0,6.2832);
     cx.fillStyle=COL[n.t]; cx.fill();
     if(i===sobre){ cx.lineWidth=2; cx.strokeStyle="#fff"; cx.stroke(); }
-    if(sobre===null ? n.deg>=4 : on) etiqueta(n,i,i===sobre);
     cx.globalAlpha=1;
+  });
+  // etiquetas al final y sin solaparse: primero las de mayor grado
+  var cajas=[];
+  orden.forEach(function(i){
+    var n=N[i], act=(i===sobre);
+    if(sobre!==null && !vecino(i)) return;
+    cx.font=(act?"600 ":"400 ")+"12.5px Barlow, system-ui, sans-serif";
+    var w=cx.measureText(n.l).width, x=n.x-w/2, y=n.y-n.r-7;
+    var c={x0:x-4,y0:y-13,x1:x+w+4,y1:y+4};
+    var choca=false;
+    for(var j=0;j<cajas.length;j++){ var o=cajas[j];
+      if(!(c.x1<o.x0||c.x0>o.x1||c.y1<o.y0||c.y0>o.y1)){ choca=true; break; } }
+    if(choca && !act) return;
+    cajas.push(c); etiqueta(n,i,act);
   });
 }
 var vivo=false, extra=0;
