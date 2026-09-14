@@ -18,7 +18,7 @@ GRAFO = """
     <div class="kicker" style="margin:0">Grafo de conocimiento de este portafolio</div>
     <div class="small tenue" id="g-stats" style="font-size:13.5px">cargando&hellip;</div>
   </div>
-  <canvas id="g" style="width:100%;height:520px;display:block;border-radius:10px;background:radial-gradient(600px 380px at 60% 20%,rgba(110,31,51,.30),transparent 65%),#0a080d;cursor:grab;touch-action:none"></canvas>
+  <canvas id="g" style="width:100%;height:560px;display:block;border-radius:10px;background:radial-gradient(600px 380px at 60% 20%,rgba(110,31,51,.30),transparent 65%),#0a080d;cursor:grab;touch-action:none"></canvas>
   <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;align-items:center">
     <span class="small tenue" style="font-size:13px">Pasa el cursor por un nodo para aislar sus relaciones &middot; arr&aacute;stralo para moverlo</span>
     <span style="flex:1"></span>
@@ -48,7 +48,7 @@ JS = """
 (function(){
 var N=[
  {id:"hogan",   t:"fuente", l:"Hogan et al. (2021)"},
- {id:"polo",    t:"fuente", l:"Polo-Bautista y Casique (2025)"},
+ {id:"polo",    t:"fuente", l:"Polo-Bautista (2025)"},
  {id:"edge",    t:"fuente", l:"Edge et al. (2024)"},
  {id:"peng",    t:"fuente", l:"Peng et al. (2024)"},
  {id:"unesco",  t:"fuente", l:"UNESCO (2023)"},
@@ -123,26 +123,49 @@ function medir(){ dpr=Math.min(window.devicePixelRatio||1,2); var r=cv.getBoundi
   W=r.width; H=r.height; cv.width=W*dpr; cv.height=H*dpr; cx.setTransform(dpr,0,0,dpr,0,0); }
 medir(); window.addEventListener("resize",medir);
 
-N.forEach(function(n,i){ var a=i/N.length*Math.PI*2; n.x=W/2+Math.cos(a)*Math.min(W,H)*0.32;
-  n.y=H/2+Math.sin(a)*Math.min(W,H)*0.32; n.vx=0; n.vy=0; n.r=5+Math.min(n.deg,8)*1.05; });
+var MX=104, MY=26;
+var k = Math.sqrt(Math.max(W*H,1)/N.length)*0.82, temp = W/7;
+N.forEach(function(n,i){
+  var a=i*2.39996, rr=Math.sqrt((i+0.6)/N.length)*Math.min(W-2*MX,H-2*MY)*0.48;
+  n.x=W/2+Math.cos(a)*rr; n.y=H/2+Math.sin(a)*rr; n.fx=0; n.fy=0;
+  n.r=5+Math.min(n.deg,8)*1.05;
+});
 
-var sobre=null, arrastra=null, alfa=1;
+var sobre=null, arrastra=null;
 function paso(){
   var i,j,a,b,dx,dy,d,f;
-  for(i=0;i<N.length;i++){ for(j=i+1;j<N.length;j++){ a=N[i];b=N[j];
-    dx=b.x-a.x; dy=b.y-a.y; d=Math.sqrt(dx*dx+dy*dy)||0.01;
-    f=1400/(d*d); if(d<1)d=1; dx/=d; dy/=d;
-    a.vx-=dx*f; a.vy-=dy*f; b.vx+=dx*f; b.vy+=dy*f; } }
-  for(i=0;i<links.length;i++){ a=N[links[i].s]; b=N[links[i].t];
-    dx=b.x-a.x; dy=b.y-a.y; d=Math.sqrt(dx*dx+dy*dy)||0.01; f=(d-110)*0.0045;
-    dx/=d; dy/=d; a.vx+=dx*f*d*0.55; a.vy+=dy*f*d*0.55; b.vx-=dx*f*d*0.55; b.vy-=dy*f*d*0.55; }
-  for(i=0;i<N.length;i++){ a=N[i];
-    a.vx+=(W/2-a.x)*0.0022; a.vy+=(H/2-a.y)*0.0026;
-    if(a===arrastra){a.vx=0;a.vy=0;continue;}
-    a.vx*=0.86; a.vy*=0.86;
-    a.x+=Math.max(-6,Math.min(6,a.vx*alfa)); a.y+=Math.max(-6,Math.min(6,a.vy*alfa));
-    a.x=Math.max(a.r+58,Math.min(W-a.r-58,a.x)); a.y=Math.max(a.r+14,Math.min(H-a.r-14,a.y)); }
-  alfa*=0.982;
+  for(i=0;i<N.length;i++){ N[i].fx=0; N[i].fy=0; }
+  for(i=0;i<N.length;i++){ for(j=i+1;j<N.length;j++){
+    a=N[i]; b=N[j]; dx=a.x-b.x; dy=a.y-b.y;
+    d=Math.sqrt(dx*dx+dy*dy); if(d<1){ d=1; dx=(Math.random()-0.5); dy=(Math.random()-0.5); }
+    f=k*k/d; dx/=d; dy/=d;
+    a.fx+=dx*f; a.fy+=dy*f; b.fx-=dx*f; b.fy-=dy*f;
+  } }
+  for(i=0;i<links.length;i++){
+    a=N[links[i].s]; b=N[links[i].t];
+    dx=a.x-b.x; dy=a.y-b.y; d=Math.sqrt(dx*dx+dy*dy)||1;
+    f=d*d/k; dx/=d; dy/=d;
+    a.fx-=dx*f; a.fy-=dy*f; b.fx+=dx*f; b.fy+=dy*f;
+  }
+  for(i=0;i<N.length;i++){
+    a=N[i]; if(a===arrastra) continue;
+    d=Math.sqrt(a.fx*a.fx+a.fy*a.fy)||1;
+    var m=Math.min(d,temp);
+    a.x+=a.fx/d*m; a.y+=a.fy/d*m;
+    a.x+=(W/2-a.x)*0.012; a.y+=(H/2-a.y)*0.016;
+    a.x=Math.max(MX,Math.min(W-MX,a.x));
+    a.y=Math.max(MY+a.r,Math.min(H-MY*0.5-a.r,a.y));
+  }
+  temp*=0.974;
+}
+function etiqueta(n,i,activo){
+  cx.font=(activo?"600 ":"400 ")+"12.5px Barlow, system-ui, sans-serif";
+  cx.textAlign="center"; cx.textBaseline="alphabetic";
+  var y=n.y-n.r-7;
+  cx.lineWidth=3.2; cx.strokeStyle="rgba(8,6,11,.92)"; cx.lineJoin="round";
+  cx.strokeText(n.l,n.x,y);
+  cx.fillStyle=activo?"#ffffff":"rgba(230,220,203,.86)";
+  cx.fillText(n.l,n.x,y);
 }
 function vecino(i){ return sobre===null || sobre===i || (adj[sobre]&&adj[sobre][i]); }
 function pintar(){
@@ -159,18 +182,14 @@ function pintar(){
     cx.beginPath(); cx.arc(n.x,n.y,n.r,0,6.2832);
     cx.fillStyle=COL[n.t]; cx.fill();
     if(i===sobre){ cx.lineWidth=2; cx.strokeStyle="#fff"; cx.stroke(); }
-    if(n.deg>=3 || on){
-      cx.font=(i===sobre?"600 ":"400 ")+"12.5px Barlow, sans-serif";
-      cx.fillStyle=(i===sobre)?"#fff":"rgba(230,220,203,.88)";
-      cx.textAlign="center"; cx.fillText(n.l, n.x, n.y-n.r-6);
-    }
+    if(sobre===null ? n.deg>=4 : on) etiqueta(n,i,i===sobre);
     cx.globalAlpha=1;
   });
 }
 var vivo=false, extra=0;
 function despertar(n){ extra=Math.max(extra, n||24); if(!vivo){ vivo=true; requestAnimationFrame(bucle); } }
 function bucle(){
-  var mover = alfa>0.05 || arrastra;
+  var mover = temp>0.55 || arrastra;
   if(mover) paso();
   pintar();
   if(extra>0) extra--;
@@ -184,13 +203,13 @@ function pos(ev){ var r=cv.getBoundingClientRect();
 function buscar(p){ for(var i=0;i<N.length;i++){ var dx=N[i].x-p.x, dy=N[i].y-p.y;
   if(dx*dx+dy*dy < (N[i].r+9)*(N[i].r+9)) return i; } return null; }
 cv.addEventListener("mousemove",function(e){ var p=pos(e);
-  if(arrastra){ arrastra.x=p.x; arrastra.y=p.y; alfa=Math.max(alfa,0.6); despertar(6); return; }
+  if(arrastra){ arrastra.x=p.x; arrastra.y=p.y; temp=Math.max(temp,3); despertar(6); return; }
   var i=buscar(p); if(i!==sobre){ sobre=i; cv.style.cursor=i===null?"grab":"pointer"; despertar(2); } });
 cv.addEventListener("mouseleave",function(){ sobre=null; arrastra=null; despertar(2); });
 cv.addEventListener("mousedown",function(e){ var i=buscar(pos(e)); if(i!==null){ arrastra=N[i]; cv.style.cursor="grabbing"; despertar(30); } });
 window.addEventListener("mouseup",function(){ arrastra=null; cv.style.cursor="grab"; });
 cv.addEventListener("touchstart",function(e){ var p=pos(e); var i=buscar(p); if(i!==null){ arrastra=N[i]; sobre=i; despertar(30); e.preventDefault(); } },{passive:false});
-cv.addEventListener("touchmove",function(e){ if(arrastra){ var p=pos(e); arrastra.x=p.x; arrastra.y=p.y; alfa=Math.max(alfa,0.6); despertar(6); e.preventDefault(); } },{passive:false});
+cv.addEventListener("touchmove",function(e){ if(arrastra){ var p=pos(e); arrastra.x=p.x; arrastra.y=p.y; temp=Math.max(temp,3); despertar(6); e.preventDefault(); } },{passive:false});
 cv.addEventListener("touchend",function(){ arrastra=null; });
 })();
 </script>"""
