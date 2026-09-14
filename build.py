@@ -85,19 +85,33 @@ def page(fn, title, kicker, h1, sub, body, desc="", extra=""):
 
 # =====================================================================  INICIO
 FOTO = """<div class="tarjeta" style="display:flex;gap:22px;align-items:center;flex-wrap:wrap">
-  <div style="flex:0 0 148px">
-    <img src="assets/foto.jpg" alt="Fotografía de %s" id="foto"
-         style="width:148px;height:148px;object-fit:cover;border-radius:50%%;border:2px solid var(--oro)"
-         onerror="this.outerHTML='&lt;div id=\'mono\' style=&quot;width:148px;height:148px;border-radius:50%%;border:2px solid var(--oro);display:flex;align-items:center;justify-content:center;font-family:Barlow Condensed;font-size:54px;font-weight:700;color:#d4a04a;background:linear-gradient(180deg,rgba(110,31,51,.55),rgba(12,10,15,.6))&quot;&gt;GS&lt;/div&gt;'">
+  <div id="avatar" style="flex:0 0 148px;width:148px;height:148px;border-radius:50%%;border:2px solid var(--oro);overflow:hidden;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,rgba(110,31,51,.55),rgba(12,10,15,.6))">
+    <img src="assets/foto.jpg" alt="Fotograf&iacute;a de %s" style="width:100%%;height:100%%;object-fit:cover">
   </div>
   <div style="flex:1 1 300px">
     <h3 style="margin-bottom:4px">%s</h3>
-    <p class="small tenue" style="margin-bottom:12px">Estudiante de %s &middot; Universidad Continental &middot; Puno, Perú</p>
-    <p style="margin-bottom:0">Vivo a orillas del lago Titicaca, a 3&nbsp;800&nbsp;metros. Mi objetivo a cinco años es
-    <strong>desarrollar sistemas de inteligencia artificial aplicados a la gestión del conocimiento</strong>:
+    <p class="small tenue" style="margin-bottom:12px">Estudiante de %s &middot; Universidad Continental &middot; Puno, Per&uacute;</p>
+    <p style="margin-bottom:0">Vivo a orillas del lago Titicaca, a 3&nbsp;800&nbsp;metros. Mi objetivo a cinco a&ntilde;os es
+    <strong>desarrollar sistemas de inteligencia artificial aplicados a la gesti&oacute;n del conocimiento</strong>:
     construir desde el altiplano herramientas que hoy solo se hacen en otros sitios.</p>
   </div>
 </div>""" % (AUTOR, AUTOR, CARRERA)
+
+AVATAR_JS = """<script>
+(function(){
+  var c=document.getElementById("avatar"); if(!c) return;
+  var i=c.querySelector("img"); if(!i) return;
+  function monograma(){
+    c.innerHTML="";
+    c.style.fontFamily="'Barlow Condensed',sans-serif";
+    c.style.fontSize="54px"; c.style.fontWeight="700"; c.style.color="var(--oro)";
+    c.style.letterSpacing="1px";
+    c.textContent="GS";
+  }
+  i.addEventListener("error", monograma);
+  if(i.complete && i.naturalWidth===0) monograma();
+})();
+</script>"""
 
 MAPA = ""
 _desc = {
@@ -171,4 +185,5 @@ page("index.html",
      "Grafos de conocimiento y RAG",
      "Portafolio digital de %s, estudiante de %s. Cómo se organiza la información para que una inteligencia artificial no invente." % (AUTOR, CARRERA),
      BODY_INICIO,
-     desc="Portafolio digital de %s (%s, Universidad Continental) sobre grafos de conocimiento y RAG." % (AUTOR, CARRERA))
+     desc="Portafolio digital de %s (%s, Universidad Continental) sobre grafos de conocimiento y RAG." % (AUTOR, CARRERA),
+     extra=AVATAR_JS)
